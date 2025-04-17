@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "pg": "^8.14.1"
+  },
+  "scripts": {
+    "build-layer": "mkdir -p layer/nodejs && cp package.json layer/nodejs/ && (cp pnpm-lock.yaml layer/nodejs/ || true) && pnpm install --prod --prefix layer/nodejs && cd layer && zip -r ../layer.zip . && cd ..",
+    "update-function": "aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --zip-file fileb://function.zip --region ap-southeast-1 --profile default",
+    "publish-layer": "aws lambda publish-layer-version --layer-name ${LAMBDA_LAYER_NAME} --zip-file fileb://layer.zip --region ap-southeast-1 --profile default",
+    "package": "rm -rf node_modules && npm install --omit=dev && zip -r function.zip index.js package.json node_modules",
+    "deploy": "pnpm run package && pnpm run update-function",
+    "invoke": "aws lambda invoke --function-name checkNewPlaylistItems --payload file://payload.json --cli-binary-format raw-in-base64-out response.json --region ap-southeast-1 --profile default && cat response.json"
+  }
+}
